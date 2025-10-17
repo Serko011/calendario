@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calendario del Reto (17 Octubre – 16 Noviembre 2025)</title>
+<style>
+  :root {
+    --border:#6f6f6f;
+    --header:#f2f5fb;
+    --title:#1e4fa3;
+    --text:#222;
+    --line:#c9cbd3;
+    --square:#b19bd4;
+    --star:#f2b535;
+  }
+  body {
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    display:flex;
+    justify-content:center;
+    padding:18px;
+    background:#fff;
+    color:var(--text);
+  }
+  .wrap{width:980px}
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:6px;color:#3a3a3a}
+  .toolbar .btn{width:22px;height:22px;border:1px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center}
+  .title{font-weight:700;color:var(--title);font-size:20px}
+  table.calendar{width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid var(--border)}
+  th, td{border:1px solid var(--border)}
+  thead th{background:var(--header); padding:8px 6px; text-align:center; font-weight:700}
+  .cell{min-height:110px; padding:8px 10px; font-size:14px; transition:background .25s ease, color .25s ease}
+  .topline{display:flex; align-items:center; gap:6px; color:#3a5b9a; font-weight:600; margin-bottom:2px}
+  .dot{width:12px;height:12px;border-radius:50%;border:2px solid #3a5b9a;display:inline-block}
+  .date{display:flex; align-items:baseline; gap:6px; margin:0}
+  .dow{color:#5c6fa6; font-weight:700}
+  .num{font-weight:700}
+  .mon{color:#5c6fa6}
+  .task{position:relative; display:inline-flex; align-items:center; gap:6px}
+  .square{width:14px;height:14px;background:var(--square); display:inline-flex; align-items:center; justify-content:center; border:1px solid #8d79b6; border-radius:2px; box-shadow: inset 0 1px 0 rgba(255,255,255,.5)}
+  .hotspot{width:24px;height:18px;border:1px dashed transparent}
+  .actions{position:absolute; left:42px; top:-6px; display:none; gap:6px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:2px 6px; box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  .hotspot:hover ~ .actions, .actions:hover{display:flex}
+  .actions button{border:0; background:transparent; padding:2px 6px; font-size:12px; line-height:1; cursor:pointer}
+  .actions .ok{color:#1a7f37}
+  .actions .no{color:#b42323}
+  .done-cell{background:#1a7f37; color:#fff}
+  .nope-cell{background:#b42323; color:#fff}
+  .hr{height:1px; background:var(--line); margin:6px 0 4px}
+  .points{display:flex; align-items:center; gap:6px; color:#6a5d22; font-weight:700}
+  .star{width:14px;height:14px;background:var(--star);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="toolbar">
+      <span class="btn"></span>
+      <span class="title">Calendario del Reto (17 Octubre – 16 Noviembre 2025)</span>
+    </div>
+
+    <table class="calendar" id="calendario" aria-label="Calendario del Reto (17 Octubre – 16 Noviembre 2025)">
+      <thead>
+        <tr>
+          <th>Lunes</th><th>Martes</th><th>Miércoles</th><th>Jueves</th><th>Viernes</th><th>Sábado</th><th>Domingo</th>
+        </tr>
+      </thead>
+      <tbody id="calBody"></tbody>
+    </table>
+  </div>
+
+<script>
+// Generar los días del 17 de octubre al 16 de noviembre de 2025
+const tbody=document.getElementById('calBody');
+const start=new Date(2025,9,17); // viernes 17 octubre
+const end=new Date(2025,10,16);
+let row=document.createElement('tr');
+
+// relleno inicial hasta viernes
+let firstDow=start.getDay(); // 5 -> viernes
+for(let i=1;i<firstDow;i++){
+  const td=document.createElement('td');
+  td.className='cell';
+  row.appendChild(td);
+}
+
+for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+  const dow=d.getDay();
+  const day=d.getDate().toString().padStart(2,'0');
+  const month=d.toLocaleString('en',{month:'short'});
+  const dowStr=d.toLocaleString('en',{weekday:'short'});
+  const td=document.createElement('td');
+  td.className='cell';
+  td.dataset.date=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  td.innerHTML=`<div class="topline"><span class="dot"></span><div class="date"><span class="dow">${dowStr}</span><span class="num">${day}</span><span class="mon">${month}</span></div></div>
+  <div class="task"><span class="square"></span><div class="hotspot" aria-label="Marcar"></div><div class="actions"><button class="ok">✓</button><button class="no">✕</button></div></div>
+  <div class="hr"></div>
+  <div class="points"><span class="star"></span><span>Puntos:</span><small>__/10</small></div>`;
+  row.appendChild(td);
+  if(dow===0){tbody.appendChild(row);row=document.createElement('tr');} // domingo cierra fila
+}
+if(row.children.length>0){
+  while(row.children.length<7) row.appendChild(document.createElement('td'));
+  tbody.appendChild(row);
+}
+
+// Cargar estado desde localStorage
+const saved=JSON.parse(localStorage.getItem('calendario-estado')||'{}');
+for(const [date,state] of Object.entries(saved)){
+  const cell=document.querySelector(`[data-date='${date}']`);
+  if(!cell) continue;
+  const square=cell.querySelector('.square');
+  if(state==='done'){cell.classList.add('done-cell');square.textContent='✓';}
+  if(state==='nope'){cell.classList.add('nope-cell');square.textContent='✕';}
+}
+
+// Guardar estado al hacer clic
+document.addEventListener('click',e=>{
+  if(e.target.matches('.actions .ok, .actions .no')){
+    const cell=e.target.closest('.cell');
+    const square=cell.querySelector('.square');
+    cell.classList.remove('done-cell','nope-cell');
+    let state='';
+    if(e.target.classList.contains('ok')){
+      cell.classList.add('done-cell');
+      square.textContent='✓';
+      state='done';
+    } else {
+      cell.classList.add('nope-cell');
+      square.textContent='✕';
+      state='nope';
+    }
+    saved[cell.dataset.date]=state;
+    localStorage.setItem('calendario-estado',JSON.stringify(saved));
+  }
+});
+</script>
+</body>
+</html>
